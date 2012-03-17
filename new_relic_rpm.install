@@ -47,7 +47,9 @@ function new_relic_rpm_uninstall() {
  * @see new_relic_rpm_install()
  */
 function new_relic_rpm_update_6001() {
-  db_query("UPDATE {system} SET weight = -20 WHERE name = 'new_relic_rpm'");
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = -20 WHERE name = 'new_relic_rpm'");
+  return $ret;
 }
 
 /**
