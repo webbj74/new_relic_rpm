@@ -5,7 +5,50 @@
  */
 
 /**
- * Implement hook_install().
+ * Implements hook_requirements().
+ */
+function new_relic_rpm_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+
+  // Check for curl
+  $requirements['curl']= array('title' => $t('Client URL library'));
+  if (extension_loaded('curl')) {
+    $info = curl_version();
+    $requirements['curl'] += array(
+      'value' => "libcurl/{$info['version']} {$info['ssl_version']} zlib/{$info['libz_version']}",
+      'severity' => REQUIREMENT_OK,
+    );
+  }
+  else {
+    $requirements['curl'] += array(
+      'value' => $t('not installed'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('The Client URL library for PHP is missing or outdated. New Relic RPM Integration requires cURL for communication with rpm.newrelic.com. Please check the <a href="@url">PHP Client URL documentation</a> for information on how to correct this.', array('@url' => 'http://www.php.net/manual/en/book.curl.php')),
+    );
+  }
+
+  // Check for newrelic
+  $requirements['newrelic']= array('title' => $t('New Relic extension'));
+  if (extension_loaded('newrelic')) {
+    $requirements['newrelic'] += array(
+      'value' => phpversion('newrelic'),
+      'severity' => REQUIREMENT_OK,
+    );
+  }
+  else {
+    $requirements['newrelic'] += array(
+      'value' => $t('not installed'),
+      'severity' => REQUIREMENT_WARNING,
+      'description' => $t('The New Relic Agent extension for PHP is missing or outdated. Some features of New Relic RPM Integration will be disabled. Please check the  <a href="@installation-guide">New Relic for PHP installation instructions</a> for assistance.', array('@installation-guide' => url('https://newrelic.com/docs/php/new-relic-for-php#installation'))),
+    );
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_install().
  */
 function new_relic_rpm_install() {
   // Set New Relic RPM module's weight to very low so we can trigger job state
@@ -14,20 +57,7 @@ function new_relic_rpm_install() {
 }
 
 /**
- * Implemenation of hook enable().
- *
- * This checks for the existence of the New Relic RPM PHP extension by checking
- * for functions. If it is not found, the module is uninstalled.
- */
-function new_relic_rpm_enable() {
-  if (!function_exists('newrelic_background_job')) {
-    drupal_set_message(t('The New Relic RPM PHP extension is missing. This extension must be installed and functional on your server before this module can be enabled. Visit <a href="@installation-guide">New Relic for PHP installation instructions</a> for assistance.', array('@installation-guide' => url('https://newrelic.com/docs/php/new-relic-for-php#installation'))), 'error');
-    module_disable(array('new_relic_rpm'));
-  }
-}
-
-/**
- * Implement hook_uninstall().
+ * Implements hook_uninstall().
  */
 function new_relic_rpm_uninstall() {
 
