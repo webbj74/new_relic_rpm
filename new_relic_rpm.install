@@ -5,12 +5,19 @@
  */
 
 /**
- * Implement hook_install().
+ * Implements hook_install().
  */
 function new_relic_rpm_install() {
   // Set New Relic RPM module's weight to very low so we can trigger job state
   // changes early. This can be important in cases like hook_cron().
-  db_query("UPDATE {system} SET weight = -20 WHERE name = 'new_relic_rpm'");
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("UPDATE {system} SET weight = -20 WHERE name = 'new_relic_rpm'") */
+  db_update('system')
+  ->fields(array(
+    'weight' => -20,
+  ))
+  ->condition('name', 'new_relic_rpm')
+  ->execute();
 }
 
 /**
@@ -27,7 +34,7 @@ function new_relic_rpm_enable() {
 }
 
 /**
- * Implement hook_uninstall().
+ * Implements hook_uninstall().
  */
 function new_relic_rpm_uninstall() {
 
@@ -48,8 +55,12 @@ function new_relic_rpm_uninstall() {
  */
 function new_relic_rpm_update_6001() {
   $ret = array();
-  $ret[] = update_sql("UPDATE {system} SET weight = -20 WHERE name = 'new_relic_rpm'");
-  return $ret;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {system} SET weight = -20 WHERE name = 'new_relic_rpm'") */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
